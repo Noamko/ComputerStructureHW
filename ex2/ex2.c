@@ -1,4 +1,4 @@
-// 308192871 Noam Koren
+//Noam Koren
 
 // Happy Cheking :) //
 #include <stdio.h>
