@@ -3,8 +3,8 @@
 extern int run_func();
 void run_main() {
 
-	Pstring p1 = {5, "hello"};
-	Pstring p2 = {3, "abc"};
+	Pstring p1 = {6, "97AAAB"};
+	Pstring p2 = {6, "A1B2C3"};
 	int len;
 	int opt = 52;
 	// initialize first pstring
