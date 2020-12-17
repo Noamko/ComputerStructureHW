@@ -6,6 +6,7 @@ format_c:   .string " %c"
 format_L4:  .string "first pstring length: %d, second pstring length: %d\n"
 format_L5:  .string "old char: %c, new char: %c, first string: %s, second string: %s\n"
 format_L6:  .string "length: %d, string: %s\n"
+format_L8:  .string "compare result: %d\n"
 
 .L10:
     .quad .L4   #case 50
@@ -35,7 +36,7 @@ run_func:
     ja      .L9 # if greaters then 10 go to def case
     jmp     *.L10(,%r12,8)
 
-    .L4:    #case 50 || 60
+    .L4: # case 50 || 60
         subq    $16, %rsp
         movq    %rsi, %rdi
         call    pstrlen
@@ -50,7 +51,7 @@ run_func:
         addq     $16, %rsp
         jmp     .L13
 
-    .L5:    # case 52
+    .L5: # case 52
         subq    $16, %rsp # 16-aligned 
         pushq   %rdx # p2 
         pushq   %rsi # p1
@@ -94,8 +95,7 @@ run_func:
         addq    $16,    %rsp # 16-aligned 
         jmp     .L13
 
-    #case 53
-    .L6:
+    .L6: #case 53
         subq    $16,        %rsp # 16-aligned 
         pushq   %rdx # p2
         pushq   %rsi # p1
@@ -134,8 +134,8 @@ run_func:
         call    printf
         add     $16, %rsp
         jmp     .L13
-    #case 54
-    .L7:
+
+    .L7:  #case 54s
         subq    $16, %rsp
         movq    %rsi, -8(%rbp)
         movq    %rdx, -16(%rbp)
@@ -170,7 +170,39 @@ run_func:
 
         addq    $16, %rsp
         jmp     .L13
-    .L8:
+    .L8: #case 55
+        subq    $16, %rsp # 16-aligned 
+        pushq   %rdx # p2
+        pushq   %rsi # p1
+        
+        movq    $format_c,  %rdi
+        leaq    -8(%rbp),   %rsi
+        xorq    %rax,       %rax # zero %rax
+        call    scanf
+
+        movq    %rsi, %r12 # start index
+        subq    $48, %r12   # subtruct '0' from value to get proper [0,255] value
+
+        movq    $format_c,  %rdi
+        leaq    -8(%rbp),   %rsi
+        xorq    %rax,       %rax # zero rax
+        call    scanf
+        movq    %rsi,       %r13 # end index
+        subq    $48,        %r13 # subtruct '0' from value to get proper [0,255] value
+
+        popq    %rsi
+        popq    %rdi
+
+        mov     %r12,       %rdx
+        mov     %r13,       %rcx
+        movq    $0,         %rax
+        call    pstrijcmp
+        movq    $format_L8, %rdi
+        movq    %rax, %rsi
+        movq    $0, %rax
+        call    printf
+        addq    $16, %rsp
+        jmp     .L13
     .L9: 
 
 .L13: # end of run_func
@@ -179,4 +211,3 @@ run_func:
     popq    %rbp
     xorq    %rax, %rax
     ret
-

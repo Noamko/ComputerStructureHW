@@ -1,5 +1,5 @@
 .section .rodata
-.global pstrlen, replaceChar, pstrijcpy, swapCase
+.global pstrlen, replaceChar, pstrijcpy, swapCase, pstrijcmp
 .text
 
 .type pstrlen, @function
@@ -50,7 +50,6 @@ replaceChar:
 		ret
 
 # Pstring* pstrijcpy(Pstring* dst, Pstring* src, char i, char j)
-
 .type pstrijcpy, @function
 pstrijcpy:
 	pushq	%rbp
@@ -72,7 +71,7 @@ pstrijcpy:
 		popq	%rbp
 		ret	
 
-
+.type checkInRange, @function
 checkInRange:
 	pushq	%rbp
 	movq	%rsp, %rbp
@@ -94,7 +93,6 @@ checkInRange:
 
 .type swapCase, @function
  # Pstring* swapCase(Pstring* pstr)
-
 swapCase:
 	pushq 	%rbp
 	pushq	%r12
@@ -155,3 +153,28 @@ swapCase:
 		ret
 		#done
 
+# int pstrijcmp(Pstring* pstr1, Pstring* pstr2, char i, char j)
+.type pstrijcmp, @function
+pstrijcmp:
+	pushq	%rbp
+	movq	%rsp,	%rbp
+	movq	$0, 	%r11
+	movq	%rdx,	%rax
+	jmp		.PCMP0
+	.PCMP0:
+		movq	$0, 	%r9
+		movq	$0, 	%r10
+		movzbl	(%rdi,	%rax,1), %r9
+		movzbl	(%rsi,	%rax,1), %r10
+		subq	%r9, 	%r10
+		addq	%r10,	%r11
+		jmp		.PCMP1
+	.PCMP1:
+		inc		%rax	
+		cmpq	%rax, %rcx
+		js		.PCMP3
+		jmp		.PCMP0
+	.PCMP3:
+		movq	%r11, %rax
+		popq	%rbp
+		ret	
