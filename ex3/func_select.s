@@ -96,7 +96,7 @@ run_func:
         addq    $16,    %rsp # 16-aligned 
         jmp     .L13
 
-    .L6: #case 53
+    .L6: # case 53
         subq    $16,        %rsp # 16-aligned 
         pushq   %rdx # p2
         pushq   %rsi # p1
@@ -136,7 +136,7 @@ run_func:
         add     $16, %rsp
         jmp     .L13
 
-    .L7:  #case 54s
+    .L7: # case 54s
         subq    $16, %rsp
         movq    %rsi, -8(%rbp)
         movq    %rdx, -16(%rbp)
@@ -171,7 +171,7 @@ run_func:
 
         addq    $16, %rsp
         jmp     .L13
-    .L8: #case 55
+    .L8: # case 55
         subq    $16, %rsp # 16-aligned 
         pushq   %rdx # p2
         pushq   %rsi # p1
@@ -204,7 +204,7 @@ run_func:
         call    printf
         addq    $16, %rsp
         jmp     .L13
-    .L9: 
+    .L9: # default case
         movq    $format_L9, %rdi
         movq    $0, %rax
         call    printf

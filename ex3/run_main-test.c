@@ -8,14 +8,14 @@ void run_main() {
 	int len;
 	int opt;
 	// initialize first pstring
-	// scanf("%d", &len);
-	// scanf("%s", p1.str);
-	// p1.len = len;
+	scanf("%d", &len);
+	scanf("%s", p1.str);
+	p1.len = len;
 
-	// // initialize second pstring
-	// scanf("%d", &len);
-	// scanf("%s", p2.str);
-	// p2.len = len;
+	// initialize second pstring
+	scanf("%d", &len);
+	scanf("%s", p2.str);
+	p2.len = len;
 
 	// // select which function to run
 	scanf("%d", &opt);

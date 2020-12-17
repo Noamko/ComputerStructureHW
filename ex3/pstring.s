@@ -29,7 +29,7 @@ checkIndex:
 .type pstrlen, @function
 pstrlen:
 	xorq	%rax,		%rax
-	movzbl	(%rdi), 	%rax
+	mov	(%rdi), 	%rax
 	ret
 
 # gets 3 args : (Pstring* pstr, char oldChar, char newChar)
@@ -50,7 +50,7 @@ replaceChar:
 
 	.LRC0:
 		xorq	%rcx,	%rcx
-		movzbl	(%rdi,	%rax, 1),	%rcx
+		mov	(%rdi,	%rax, 1),	%rcx
 		cmp		%rsi,	%rcx
 		je		.LRC1
 		jmp		.LRC2
@@ -122,7 +122,8 @@ pstrijcpy:
 		popq	%rbp
 		ret
 	.LPS0:
-		movzbl	(%r13, %rax,1), %r9
+		movq	$0, %r9
+		mov	(%r13, %rax,1), %r9
 		mov	%r9b, (%r12,%rax,1)
 		jmp	.LPS1
 	.LPS1:
@@ -178,7 +179,7 @@ swapCase:
 
 	.SWC0:
 	movq	$0, %rdi
-	movzbl	(%r12,%rbx,1), %rdi
+	mov	(%r12,%rbx,1), %rdi
 	movq	%rdi, %r13
 	movq	$65, %rsi
 	movq	$90, %rdx
@@ -275,8 +276,8 @@ pstrijcmp:
 	.PCMP0:
 		movq	$0, 	%r9
 		movq	$0, 	%r10
-		movzbl	(%r12,	%rax,1), %r9
-		movzbl	(%r13,	%rax,1), %r10
+		mov		(%r12,	%rax,1), %r9
+		mov		(%r13,	%rax,1), %r10
 		subq	%r9, 	%r10
 		addq	%r10,	%r11
 		jmp		.PCMP1
