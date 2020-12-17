@@ -3,10 +3,10 @@
 extern int run_func();
 void run_main() {
 
-	Pstring p1 = {4, "abcd"};
-	Pstring p2 = {6, "1bc2"};
+	Pstring p1 = {4, "abCD"};
+	Pstring p2 = {4, "1bc2"};
 	int len;
-	int opt = 55;
+	int opt;
 	// initialize first pstring
 	// scanf("%d", &len);
 	// scanf("%s", p1.str);
@@ -18,6 +18,6 @@ void run_main() {
 	// p2.len = len;
 
 	// // select which function to run
-	// scanf("%d", &opt);
+	scanf("%d", &opt);
 	run_func(opt, &p1, &p2);
 }

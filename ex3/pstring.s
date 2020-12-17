@@ -1,7 +1,31 @@
 .section .rodata
+format_INV:		.string	"invalid input!\n"
 .global pstrlen, replaceChar, pstrijcpy, swapCase, pstrijcmp
 .text
 
+.type checkIndex, @function
+# checkIndex(pstring *, int i)
+checkIndex:
+	pushq	%rbp
+	movq	%rsp, %rbp
+
+	xorq	%rax, %rax
+	call 	pstrlen
+	movq	%rax, %rdx
+
+	movq	%rsi, %rdi
+	movq	$0,	%rsi
+	xorq	%rax, %rax
+	call 	checkInRange
+	cmp 	$0, %rax
+	js		.INVALID
+	movq	$1, %rax
+	popq	%rbp
+	ret
+	.INVALID:
+		movq	$0, %rax
+		popq	%rbp
+		ret
 .type pstrlen, @function
 pstrlen:
 	xorq	%rax,		%rax
@@ -55,23 +79,68 @@ pstrijcpy:
 	pushq	%rbp
 	movq	%rsp,	%rbp
 
-	movq	%rdx, %rax
+	pushq	%r12
+	pushq	%r13
+	pushq	%r14
+	pushq	%r15
+
+	
+	movq	%rdi, %r12
+	movq	%rsi, %r13
+	movq	%rdx, %r14
+	movq	%rcx, %r15
+
+	cmp		%r14, %r15
+	jl		.ER0
+
+	movq	%r12, %rdi
+	movq	%r14, %rsi
+	xorq	%rax, %rax
+	call 	checkIndex
+	cmp		$0, %rax
+	je		.ER0
+
+	movq	%r13, %rdi
+	movq	%r15, %rsi
+	xorq	%rax, %rax
+	call 	checkIndex
+	cmp		$0, %rax
+	je		.ER0
+
+	movq	%r14, %rax
 	jmp		.LPS0
+
+	.ER0:
+		movq	$format_INV, %rdi
+		xorq	%rax, %rax
+		call	printf
+		movq	%r12, %rax
+		popq	%r15
+		popq	%r14
+		popq	%r13
+		popq	%r12
+		popq	%rbp
+		ret
 	.LPS0:
-		movzbl	(%rsi, %rax,1), %r9
-		mov	%r9b, (%rdi,%rax,1)
+		movzbl	(%r13, %rax,1), %r9
+		mov	%r9b, (%r12,%rax,1)
 		jmp	.LPS1
 	.LPS1:
 		inc		%rax	
-		cmpq	%rax, %rcx
+		cmpq	%rax, %r15
 		js		.LPS3
 		jmp		.LPS0
 	.LPS3:
-		movq	%rdi, %rax
+		movq	%r12, %rax
+		popq	%r15
+		popq	%r14
+		popq	%r13
+		popq	%r12
 		popq	%rbp
 		ret	
 
 .type checkInRange, @function
+# checkInRange(int a, int lower, int higher)
 checkInRange:
 	pushq	%rbp
 	movq	%rsp, %rbp
@@ -158,23 +227,69 @@ swapCase:
 pstrijcmp:
 	pushq	%rbp
 	movq	%rsp,	%rbp
+
+	pushq	%r12
+	pushq	%r13
+	pushq	%r14
+	pushq	%r15
+
+	
+	movq	%rdi, %r12
+	movq	%rsi, %r13
+	movq	%rdx, %r14
+	movq	%rcx, %r15
+
+	cmp		%r14, %r15
+	jl		.ER1
+
+	movq	%r12, %rdi
+	movq	%r14, %rsi
+	xorq	%rax, %rax
+	call 	checkIndex
+	cmp		$0, %rax
+	je		.ER1
+
+	movq	%r13, %rdi
+	movq	%r15, %rsi
+	xorq	%rax, %rax
+	call 	checkIndex
+	cmp		$0, %rax
+	je		.ER1
+
+
 	movq	$0, 	%r11
-	movq	%rdx,	%rax
+	movq	%r14,	%rax
 	jmp		.PCMP0
+
+	.ER1:
+		movq	$format_INV, %rdi
+		xorq	%rax, %rax
+		call	printf
+		movq	$-2, %rax
+		popq	%r15
+		popq	%r14
+		popq	%r13
+		popq	%r12
+		popq	%rbp
+		ret
 	.PCMP0:
 		movq	$0, 	%r9
 		movq	$0, 	%r10
-		movzbl	(%rdi,	%rax,1), %r9
-		movzbl	(%rsi,	%rax,1), %r10
+		movzbl	(%r12,	%rax,1), %r9
+		movzbl	(%r13,	%rax,1), %r10
 		subq	%r9, 	%r10
 		addq	%r10,	%r11
 		jmp		.PCMP1
 	.PCMP1:
 		inc		%rax	
-		cmpq	%rax, %rcx
+		cmpq	%rax, %r15
 		js		.PCMP3
 		jmp		.PCMP0
 	.PCMP3:
 		movq	%r11, %rax
+		popq	%r15
+		popq	%r14
+		popq	%r13
+		popq	%r12
 		popq	%rbp
 		ret	

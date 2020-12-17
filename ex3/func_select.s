@@ -7,6 +7,7 @@ format_L4:  .string "first pstring length: %d, second pstring length: %d\n"
 format_L5:  .string "old char: %c, new char: %c, first string: %s, second string: %s\n"
 format_L6:  .string "length: %d, string: %s\n"
 format_L8:  .string "compare result: %d\n"
+format_L9:  .string "invalid option!\n"
 
 .L10:
     .quad .L4   #case 50
@@ -204,6 +205,9 @@ run_func:
         addq    $16, %rsp
         jmp     .L13
     .L9: 
+        movq    $format_L9, %rdi
+        movq    $0, %rax
+        call    printf
 
 .L13: # end of run_func
     popq    %r13
