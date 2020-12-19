@@ -1,13 +1,13 @@
 .section    .rodata
 .align  8
 format_d:	.string "%d"
-format_s:   .string "%s"
-format_c:   .string " %c"
-format_L4:  .string "first pstring length: %d, second pstring length: %d\n"
-format_L5:  .string "old char: %c, new char: %c, first string: %s, second string: %s\n"
-format_L6:  .string "length: %d, string: %s\n"
-format_L8:  .string "compare result: %d\n"
-format_L9:  .string "invalid option!\n"
+format_s:	.string "%s"
+format_c:	.string " %c"
+format_L4:	.string "first pstring length: %d, second pstring length: %d\n"
+format_L5:	.string "old char: %c, new char: %c, first string: %s, second string: %s\n"
+format_L6:	.string "length: %d, string: %s\n"
+format_L8:	.string "compare result: %d\n"
+format_L9:	.string "invalid option!\n"
 
 .L10:
     .quad .L4   #case 50
@@ -38,45 +38,46 @@ run_func:
     jmp     *.L10(,%r12,8)
 
     .L4: # case 50 || 60
-        subq    $16, %rsp
+        subq    $8, %rsp
         movq    %rsi, %rdi
         call    pstrlen
-        movl    %eax, %esi
+        movq    %rax, %rsi
 
         movq    %rdx, %rdi
         call    pstrlen
 
         movq    $format_L4, %rdi
-        movl    %eax, %edx
+        movq    %rax, %rdx
+	movq	$0, %rax
         call    printf
-        addq     $16, %rsp
+        addq     $8, %rsp
         jmp     .L13
 
     .L5: # case 52
-        subq    $16, %rsp # 16-aligned 
-        pushq   %rdx # p2 
         pushq   %rsi # p1
+        pushq   %rdx # p2 
+        subq    $0x8, %rsp  
 
         movq    $format_c, %rdi
-        leaq    -8(%rbp), %rsi
+        movq    %rsp, %rsi
         xorq    %rax, %rax # zero %rax
         call    scanf
 
         
-        movq    %rsi, %r12 # save old char
+        movzbq	(%rsp), %r12 # save old char
 
         movq    $format_c, %rdi
-        leaq    -8(%rbp), %rsi
+        movq    %rsp, %rsi
         xorq    %rax, %rax # zero rax
         call    scanf
-        movq    %rsi, %r13 # save new char
-
+        movzbq  (%rsp), %r13 # save new char
+	addq	$0x8, %rsp
         popq    %rdi       # pstring 1 to 3rd arg
         movq    %r12, %rsi # move old char to 2nd arg
         movq    %r13, %rdx # move new char to 3rd arg
         xorq    %rax, %rax # zero %rax
         call    replaceChar
-
+	
         popq    %rdi
         pushq   %rax
 
@@ -85,124 +86,133 @@ run_func:
         xorq    %rax, %rax # zero %rax
         call    replaceChar
 
-       
         movq    $format_L5, %rdi
         movq    %r12, %rsi
         movq    %r13, %rdx
         popq    %r8
+	addq	$1, %r8
         movq    %rax, %rcx
+	addq	$1, %rcx
         movq    $0, %rax
         call    printf
-        addq    $16,    %rsp # 16-aligned 
         jmp     .L13
 
     .L6: # case 53
-        subq    $16,        %rsp # 16-aligned 
-        pushq   %rdx # p2
-        pushq   %rsi # p1
-        
+	movq	%rsi,	%r14
+	movq	%rdx,	%r15
+        subq    $0x8,	%rsp 
         movq    $format_c,  %rdi
-        leaq    -8(%rbp),   %rsi
-        xorq    %rax,       %rax # zero %rax
+        movq	%rsp,	%rsi
+        xorq    %rax,	%rax # zero %rax
         call    scanf
 
-        movq    %rsi, %r12 # start index
+        movzbq    (%rsp), %r12 # start index
         subq    $48, %r12   # subtruct '0' from value to get proper [0,255] value
 
         movq    $format_c,  %rdi
-        leaq    -8(%rbp),   %rsi
-        xorq    %rax,       %rax # zero rax
+        movq	%rsp,   %rsi
+        xorq    %rax,	%rax # zero rax
         call    scanf
-        movq    %rsi,       %r13 # end index
-        subq    $48,        %r13 # subtruct '0' from value to get proper [0,255] value
+        movzbq	(%rsp),	%r13 # end index
+        subq    $48,	%r13 # subtruct '0' from value to get proper [0,255] value
 
-        popq    %rsi
-        popq    %rdi
+      	addq	$0x8,%rsp 
 
-        mov     %r12,       %rdx
-        mov     %r13,       %rcx
+        movq	%r14, %rdi
+        movq    %r15, %rsi
+        mov     %r12, %rdx
+        mov     %r13, %rcx
         movq    $0, %rax
         call    pstrijcpy
-
         movq    %rax, %r12
-        movq    %rax, %rdi
-        movq    $0, %rax
+
+        movq    %rax,	%rdi
+        movq    $0,	%rax
         call    pstrlen
+
         movq    $format_L6, %rdi
         movq    %rax, %rsi
         movq    %r12, %rdx
+	addq	$1, %rdx
         movq    $0, %rax
         call    printf
-        add     $16, %rsp
+	
+	movq	%r15, %rdi
+	mov	$0, %rax
+	call 	pstrlen
+	
+        movq    $format_L6, %rdi
+        movq    %rax, %rsi
+        movq    %r15, %rdx
+	addq	$1, %rdx
+        movq    $0, %rax
+        call    printf
+
         jmp     .L13
 
-    .L7: # case 54s
-        subq    $16, %rsp
-        movq    %rsi, -8(%rbp)
-        movq    %rdx, -16(%rbp)
-
-        movq    -8(%rbp), %rdi;
+    .L7: # case 54
+	movq	%rsi, %r12
+	movq	%rdx, %r13
+        movq    %r12, %rdi;
         call    swapCase
 
-        movq    -8(%rbp), %rdi
+        movq    %r12, %rdi
         movq    $0, %rax
         call    pstrlen
 
         movq    %rax, %rsi
         movq    $format_L6, %rdi
-        movq    -8(%rbp), %rdx
+        movq    %r12, %rdx
+	addq	$1, %rdx
         movq    %rax, %rsi
         movq    $0, %rax
         call    printf
         # end of p1
-        movq    -16(%rbp), %rdi;
+        movq   	%r13, %rdi;
         call    swapCase
 
-        movq    -16(%rbp), %rdi
+        movq    %r13, %rdi
         movq    $0, %rax
         call    pstrlen
 
         movq    %rax, %rsi
         movq    $format_L6, %rdi
-        movq    -16(%rbp), %rdx
+        movq    %r13, %rdx
+	addq	$1,	%rdx
         movq    %rax, %rsi
         movq    $0, %rax
         call    printf
 
-        addq    $16, %rsp
         jmp     .L13
     .L8: # case 55
-        subq    $16, %rsp # 16-aligned 
-        pushq   %rdx # p2
         pushq   %rsi # p1
-        
-        movq    $format_c,  %rdi
-        leaq    -8(%rbp),   %rsi
-        xorq    %rax,       %rax # zero %rax
+        pushq   %rdx # p2
+        subq    $0x8,	%rsp 
+
+        movq    $format_d,  %rdi
+        movq	%rsp,	%rsi
+        xorq    %rax,	%rax # zero %rax
         call    scanf
 
-        movq    %rsi, %r12 # start index
-        subq    $48, %r12   # subtruct '0' from value to get proper [0,255] value
+        movzbq  (%rsp), %r12 # start index
 
-        movq    $format_c,  %rdi
-        leaq    -8(%rbp),   %rsi
-        xorq    %rax,       %rax # zero rax
+        movq    $format_d,  %rdi
+        movq	%rsp,   %rsi
+        xorq    %rax,   %rax # zero rax
         call    scanf
-        movq    %rsi,       %r13 # end index
-        subq    $48,        %r13 # subtruct '0' from value to get proper [0,255] value
+        movzbq  (%rsp),	%r13 # end index
 
-        popq    %rsi
+      	addq	$0x8, %rsp 
         popq    %rdi
-
-        mov     %r12,       %rdx
-        mov     %r13,       %rcx
+        popq    %rsi
+        movq     %r12,       %rdx
+        movq     %r13,       %rcx
         movq    $0,         %rax
         call    pstrijcmp
         movq    $format_L8, %rdi
         movq    %rax, %rsi
         movq    $0, %rax
         call    printf
-        addq    $16, %rsp
         jmp     .L13
     .L9: # default case
         movq    $format_L9, %rdi

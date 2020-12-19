@@ -18,7 +18,8 @@ checkIndex:
 	xorq	%rax, %rax
 	call 	checkInRange
 	cmp 	$0, %rax
-	js		.INVALID
+	js	.INVALID
+
 	movq	$1, %rax
 	popq	%rbp
 	ret
@@ -26,48 +27,47 @@ checkIndex:
 		movq	$0, %rax
 		popq	%rbp
 		ret
+
 .type pstrlen, @function
 pstrlen:
-	xorq	%rax,		%rax
-	mov	(%rdi), 	%rax
+	xorq	%rax,	%rax
+	movzbq	(%rdi), %rax
 	ret
 
 # gets 3 args : (Pstring* pstr, char oldChar, char newChar)
 .type replaceChar, @function
 replaceChar:
-	pushq 		%rbp
-	movq		%rsp,	%rbp
+	pushq	%rbp
+	movq	%rsp,	%rbp
 
-	pushq		%rbx
-	subq		$16, 	%rsp
+	pushq	%rbx
 
-	call 		pstrlen
-	mov			$0,		%rbx
-	mov			%al,	%bl
-	inc			%bl
-	mov			$0,		%al 
-	jmp			.LRC0
+	call 	pstrlen
+	mov	$0,	%rbx
+	mov	%al,	%bl
+	inc	%bl
+	mov	$0,	%al 
+	jmp	.LRC0
 
 	.LRC0:
 		xorq	%rcx,	%rcx
-		mov	(%rdi,	%rax, 1),	%rcx
-		cmp		%rsi,	%rcx
-		je		.LRC1
-		jmp		.LRC2
+		movzbq	(%rdi,	%rax, 1), %rcx
+		cmp	%rsi, %rcx
+		je	.LRC1
+		jmp	.LRC2
 	
 	.LRC1:
-		mov		%dl,	(%rdi, %rax, 1)
+		mov	%dl,	(%rdi, %rax, 1)
 		jmp 	.LRC2
 
 	.LRC2:
-		inc		%al
-		cmp		%al,	%bl
-		je		.LRC3
+		inc	%al
+		cmp	%al,	%bl
+		je	.LRC3
 
 		jmp 	.LRC0
 
 	.LRC3:
-		add		$16,	%rsp
 		popq 	%rbx
 		popq 	%rbp
 		movq 	%rdi,	%rax
@@ -84,7 +84,6 @@ pstrijcpy:
 	pushq	%r14
 	pushq	%r15
 
-	
 	movq	%rdi, %r12
 	movq	%rsi, %r13
 	movq	%rdx, %r14
@@ -108,6 +107,8 @@ pstrijcpy:
 	je		.ER0
 
 	movq	%r14, %rax
+	addq	$1, %rax
+	addq	$1, %r15
 	jmp		.LPS0
 
 	.ER0:
@@ -123,8 +124,8 @@ pstrijcpy:
 		ret
 	.LPS0:
 		movq	$0, %r9
-		mov	(%r13, %rax,1), %r9
-		mov	%r9b, (%r12,%rax,1)
+		movzbq	(%r13, %rax,1), %r9
+		movb	%r9b, (%r12,%rax,1)
 		jmp	.LPS1
 	.LPS1:
 		inc		%rax	
@@ -150,10 +151,10 @@ checkInRange:
 
 	# a - 90 = x	
 	subq	%rdx, 	%rcx
-	imul	$-1, 	%rcx
 
 	# 65 - a = y
 	subq	%rsi, 	%rdi
+	imul	$-1, 	%rdi
 
 	# check sign(x*y)
 	imul	%rcx, 	%rdi
@@ -170,8 +171,9 @@ swapCase:
 	pushq	%rbx
 
 	movq	%rsp,	%rbp
-	movq	$0,		%rax
+	movq	$0,	%rax
 	call	pstrlen
+	add 	$1, %rdi
 	movq	%rdi, %r12
 	movq	%rax, %r9
 	movq	$0, %rbx
@@ -179,15 +181,15 @@ swapCase:
 
 	.SWC0:
 	movq	$0, %rdi
-	mov	(%r12,%rbx,1), %rdi
+	movzbq	(%r12,%rbx,1), %rdi
 	movq	%rdi, %r13
 	movq	$65, %rsi
 	movq	$90, %rdx
 	movq	$0, %rax
 	call 	checkInRange
 
-	cmp		$0, %rax
-	jge		.SWC1
+	cmp	$0, %rax
+	jge	.SWC1
 
 	movq	%r13, %rdi
 	movq	$97, %rsi
@@ -195,10 +197,10 @@ swapCase:
 	movq	$0, %rax
 	call 	checkInRange
 
-	cmp		$0, %rax
-	jge		.SWC2
+	cmp	$0, %rax
+	jge	.SWC2
 
-	jle		.SWC3
+	jle	.SWC3
 	.SWC1: # char is in bound 
 		add	$32, %r13
 		mov	%r13b, (%r12,%rbx,1)
@@ -260,6 +262,8 @@ pstrijcmp:
 
 	movq	$0, 	%r11
 	movq	%r14,	%rax
+	addq	$1, %r12
+	addq	$1, %r13
 	jmp		.PCMP0
 
 	.ER1:
@@ -276,18 +280,31 @@ pstrijcmp:
 	.PCMP0:
 		movq	$0, 	%r9
 		movq	$0, 	%r10
-		mov		(%r12,	%rax,1), %r9
-		mov		(%r13,	%rax,1), %r10
+		movzbq	(%r12,	%rax,1), %r9
+		movzbq	(%r13,	%rax,1), %r10
 		subq	%r9, 	%r10
 		addq	%r10,	%r11
 		jmp		.PCMP1
 	.PCMP1:
 		inc		%rax	
 		cmpq	%rax, %r15
-		js		.PCMP3
+		js		.PCMP2
 		jmp		.PCMP0
+	.PCMP2:
+		cmp	$0, %r11
+		jg	.PCPOS
+		jl	.PCNEG
+		movq	$0, %rax
+		jmp .PCMP3
+
+		.PCPOS:
+			movq	$1, %rax
+			jmp .PCMP3
+		.PCNEG:
+			movq	$-1, %rax
+			jmp .PCMP3
+		
 	.PCMP3:
-		movq	%r11, %rax
 		popq	%r15
 		popq	%r14
 		popq	%r13

@@ -1,6 +1,0 @@
-pstrijcpy(p1,02, i , j) {
-    for (int k = i, k =< j, k++) {
-        p2[k] = p1[k]
-    }
-    return p2
-}
