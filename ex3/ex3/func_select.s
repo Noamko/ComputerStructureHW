@@ -123,7 +123,6 @@ run_func:
 
 # ----------- CASE 53 ----------- #
 	.L6:
-
 	# -- save p1 & p2 -- #
 	movq	%rsi,	%r14
 	movq	%rdx,	%r15

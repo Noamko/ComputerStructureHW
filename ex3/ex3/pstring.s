@@ -28,6 +28,9 @@ checkIndex:
 	cmp 	$0, %rax
 	js		.INVALID # return error is index is not out of bound
 	movq	$1, %rax # return 1 o.w
+
+	popq	%rbp
+	ret
 	# ----------------------------------------- #
 
 	.INVALID:
@@ -35,8 +38,6 @@ checkIndex:
 	popq	%rbp
 	ret
 
-	popq	%rbp
-	ret
 # ------------------------------------------------ #
 
 # -- pstrlen gets pstring length -- #
